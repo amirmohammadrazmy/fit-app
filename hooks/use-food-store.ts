@@ -10,6 +10,8 @@ interface FoodState {
   recognizedFood: FoodItem | null;
   isRecognizing: boolean;
   currentImage: string | null;
+  isPremium: boolean;
+  scanCount: number;
   
   // Actions
   setRecognizedFood: (food: FoodItem | null) => void;
@@ -19,6 +21,8 @@ interface FoodState {
   getDailyNutrition: (date: string) => DailyNutrition;
   clearRecognizedFood: () => void;
   getFoodById: (id: string) => FoodItem | undefined;
+  setIsPremium: (isPremium: boolean) => void;
+  incrementScanCount: () => void;
 }
 
 export const useFoodStore = create<FoodState>()(
@@ -29,6 +33,8 @@ export const useFoodStore = create<FoodState>()(
       recognizedFood: null,
       isRecognizing: false,
       currentImage: null,
+      isPremium: false, // Default to false
+      scanCount: 0,
       
       setRecognizedFood: (food) => set({ recognizedFood: food }),
       setIsRecognizing: (isRecognizing) => set({ isRecognizing }),
@@ -64,6 +70,12 @@ export const useFoodStore = create<FoodState>()(
       
       getFoodById: (id) => {
         return get().foods.find(food => food.id === id);
+      },
+
+      setIsPremium: (isPremium) => set({ isPremium }),
+
+      incrementScanCount: () => {
+        set((state) => ({ scanCount: state.scanCount + 1 }));
       },
     }),
     {

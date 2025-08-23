@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFoodStore } from './use-food-store';
 import { FoodItem } from '@/types/food';
+import { RORK_API_KEY, RORK_API_URL } from '@/constants/api';
 
 export const useAIRecognition = () => {
   const { setRecognizedFood, setIsRecognizing, foods } = useFoodStore();
@@ -12,13 +14,22 @@ export const useAIRecognition = () => {
       setError(null);
       setIsRecognizing(true);
       
-      console.log('🔍 Starting food recognition...');
-      console.log('📸 Image base64 length:', imageBase64.length);
+      // Simple pseudo-hash for caching to avoid storing huge base64 strings
+      const imageHash = imageBase64.substring(0, 100) + imageBase64.substring(imageBase64.length - 100);
+      const cacheKey = `@recognized_food:${imageHash}`;
 
-      // Ensure base64 string is properly formatted
+      // 1. Check cache first
+      const cachedFood = await AsyncStorage.getItem(cacheKey);
+      if (cachedFood) {
+        console.log('✅ Found recognition result in cache!');
+        setRecognizedFood(JSON.parse(cachedFood));
+        return;
+      }
+
+      console.log('🔍 Starting food recognition (no cache)...');
+
       const cleanBase64 = imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`;
       
-      // Prepare the message for the AI
       const messages = [
         {
           role: 'system',
@@ -33,105 +44,79 @@ export const useAIRecognition = () => {
         }
       ];
 
-      console.log('🚀 Sending request to AI API...');
-      
-      // Make the API request with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      // 2. Make API request if not in cache
+      const response = await fetch(RORK_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RORK_API_KEY}`,
         },
         body: JSON.stringify({ messages }),
         signal: controller.signal,
       });
       
       clearTimeout(timeoutId);
-      
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('✅ API Response:', data);
       
       if (!data.completion) {
         throw new Error('No completion in API response');
       }
       
       const recognizedDishName = data.completion.trim().toLowerCase();
-      console.log('🍽️ Recognized dish name:', recognizedDishName);
       
-      // Find the food in our database with better matching
       const recognizedFood = foods.find(
         food => {
           const dishName = recognizedDishName.toLowerCase();
           const foodNameEn = food.nameEn.toLowerCase();
           const foodName = food.name.toLowerCase();
-          const foodNameFa = food.nameFa.toLowerCase();
           
-          // Exact match
-          if (foodNameEn === dishName || foodName === dishName) {
-            return true;
-          }
-          
-          // Partial match
-          if (foodNameEn.includes(dishName) || dishName.includes(foodNameEn) ||
-              foodName.includes(dishName) || dishName.includes(foodName)) {
-            return true;
-          }
-          
-          // Special cases for common food variations
-          if ((dishName.includes('egg') && foodNameEn.includes('egg')) ||
-              (dishName.includes('chicken') && foodNameEn.includes('chicken')) ||
-              (dishName.includes('rice') && foodNameEn.includes('rice')) ||
-              (dishName.includes('potato') && foodNameEn.includes('potato')) ||
-              (dishName.includes('salmon') && foodNameEn.includes('salmon')) ||
-              (dishName.includes('salad') && foodNameEn.includes('salad'))) {
-            return true;
-          }
+          if (foodNameEn === dishName || foodName === dishName) return true;
+          if (foodNameEn.includes(dishName) || dishName.includes(foodNameEn)) return true;
+          if ((dishName.includes('egg') && foodNameEn.includes('egg'))) return true;
+          if ((dishName.includes('chicken') && foodNameEn.includes('chicken'))) return true;
           
           return false;
         }
       );
 
+      let foodResult: FoodItem;
       if (recognizedFood) {
-        console.log('✅ Found matching food:', recognizedFood.nameFa);
-        setRecognizedFood(recognizedFood);
+        foodResult = recognizedFood;
       } else {
-        console.log('⚠️ No matching food found, using fallback');
-        // Create a generic food item based on AI recognition
-        const genericFood = {
+        foodResult = {
           id: 'generic-' + Date.now(),
           name: recognizedDishName,
           nameEn: recognizedDishName,
           nameFa: recognizedDishName === 'unknown' ? 'غذای ناشناخته' : recognizedDishName,
-          calories: 200, // Generic estimate
-          protein: 10,
-          carbs: 20,
-          fat: 8,
+          calories: 200, protein: 10, carbs: 20, fat: 8,
           image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000',
           category: 'شناسایی شده',
           description: `غذای شناسایی شده توسط هوش مصنوعی: ${recognizedDishName}`,
-          healthierAlternatives: ['کنترل مقدار مصرف', 'اضافه کردن سبزیجات', 'استفاده از روش‌های پخت سالم‌تر']
+          healthierAlternatives: ['کنترل مقدار مصرف', 'اضافه کردن سبزیجات']
         };
-        setRecognizedFood(genericFood);
         if (recognizedDishName === 'unknown') {
           setError('متأسفانه نتوانستیم غذا را شناسایی کنیم. لطفاً دوباره تلاش کنید.');
         }
       }
+
+      // 3. Save to cache
+      await AsyncStorage.setItem(cacheKey, JSON.stringify(foodResult));
+      console.log('💾 Saved recognition result to cache.');
+
+      setRecognizedFood(foodResult);
+
     } catch (err: any) {
       console.error('❌ Error recognizing food:', err);
-      
       let errorMessage = 'خطا در شناسایی غذا. لطفاً دوباره تلاش کنید.';
-      
       if (err.name === 'AbortError') {
         errorMessage = 'درخواست زمان زیادی طول کشید. لطفاً دوباره تلاش کنید.';
       } else if (err.message.includes('Failed to fetch')) {
@@ -139,7 +124,6 @@ export const useAIRecognition = () => {
       } else if (err.message.includes('API Error')) {
         errorMessage = 'مشکل در سرویس شناسایی. لطفاً بعداً تلاش کنید.';
       }
-      
       setError(errorMessage);
     } finally {
       setIsRecognizing(false);

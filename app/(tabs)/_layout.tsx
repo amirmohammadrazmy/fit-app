@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { Home, ScanLine, Clock, User } from "lucide-react-native";
+import { Home, ScanLine, Clock, User, ClipboardList } from "lucide-react-native";
 import Colors, { getPersianFont } from "@/constants/colors";
 import { I18nManager } from 'react-native';
 
@@ -69,6 +69,19 @@ export default function TabLayout() {
               size={24} 
               color={color}
               strokeWidth={focused ? 2.5 : 2}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="diet"
+        options={{
+          title: "رژیم",
+          tabBarIcon: ({ color, focused }) => (
+            <ClipboardList
+              size={24}
+              color={color}
+              fill={focused ? color : 'transparent'}
             />
           ),
         }}

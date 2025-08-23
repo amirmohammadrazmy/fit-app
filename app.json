@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.persian-calorie-ai",
+      "bundleIdentifier": "com.company.persiancalorieai",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.persian-calorie-ai",
+      "package": "com.company.persiancalorieai",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -41,9 +41,7 @@
     "plugins": [
       [
         "expo-router",
-        {
-          "origin": "https://rork.com/"
-        }
+        {}
       ],
       [
         "expo-image-picker",
