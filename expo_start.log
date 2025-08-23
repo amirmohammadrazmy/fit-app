@@ -1,0 +1,8 @@
+$ expo start
+2025-08-23T15:44:00.247Z expo:telemetry Switching strategy from detached to instant
+2025-08-23T15:44:00.346Z expo:telemetry Recording 1 event(s)
+2025-08-23T15:44:00.370Z expo:env /app/.env does not exist, skipping this env file
+2025-08-23T15:44:00.370Z expo:env /app/.env.development does not exist, skipping this env file
+2025-08-23T15:44:00.371Z expo:env /app/.env.local does not exist, skipping this env file
+2025-08-23T15:44:00.371Z expo:env /app/.env.development.local does not exist, skipping this env file
+Starting project at /app

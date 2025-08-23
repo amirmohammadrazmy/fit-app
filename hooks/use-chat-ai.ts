@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RORK_API_KEY, RORK_API_URL } from '@/constants/api';
 
 type Message = {
   id: string;
@@ -37,10 +38,11 @@ export const useChatAI = () => {
       ];
       
       // Make the API request
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+      const response = await fetch(RORK_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RORK_API_KEY}`,
         },
         body: JSON.stringify({ messages: apiMessages }),
       });

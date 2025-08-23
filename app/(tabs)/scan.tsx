@@ -11,12 +11,27 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function ScanScreen() {
   const [error, setError] = useState<string | null>(null);
   const { recognizeFoodFromImage, error: aiError } = useAIRecognition();
-  const { recognizedFood, isRecognizing, foods, setRecognizedFood, currentImage, setCurrentImage } = useFoodStore();
+  const {
+    recognizedFood,
+    isRecognizing,
+    foods,
+    setRecognizedFood,
+    currentImage,
+    setCurrentImage,
+    isPremium,
+    scanCount,
+    incrementScanCount,
+  } = useFoodStore();
   
   // Combine errors from different sources
   const displayError = error || aiError;
   
   const pickImage = async () => {
+    if (!isPremium && scanCount >= 10) {
+      router.push('/premium');
+      return;
+    }
+
     try {
       console.log('📱 Opening image picker...');
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -34,6 +49,9 @@ export default function ScanScreen() {
         console.log('📱 Selected image:', { width: asset.width, height: asset.height, hasBase64: !!asset.base64 });
         
         if (asset.base64) {
+          if (!isPremium) {
+            incrementScanCount();
+          }
           const imageUri = `data:image/jpeg;base64,${asset.base64}`;
           setCurrentImage(imageUri);
           await recognizeFoodFromImage(asset.base64);
@@ -49,6 +67,11 @@ export default function ScanScreen() {
   };
   
   const takePhoto = async () => {
+    if (!isPremium && scanCount >= 10) {
+      router.push('/premium');
+      return;
+    }
+
     try {
       console.log('📷 Requesting camera permissions...');
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -73,6 +96,9 @@ export default function ScanScreen() {
         console.log('📷 Captured image:', { width: asset.width, height: asset.height, hasBase64: !!asset.base64 });
         
         if (asset.base64) {
+          if (!isPremium) {
+            incrementScanCount();
+          }
           const imageUri = `data:image/jpeg;base64,${asset.base64}`;
           setCurrentImage(imageUri);
           await recognizeFoodFromImage(asset.base64);
@@ -108,6 +134,11 @@ export default function ScanScreen() {
           <Text style={styles.subtitle}>
             عکس غذای ایرانی خود را بگیرید تا اطلاعات تغذیه‌ای آن را دریافت کنید
           </Text>
+          {!isPremium && (
+            <Text style={styles.scanCountText}>
+              {10 - scanCount > 0 ? `شما ${10 - scanCount} اسکن رایگان دیگر دارید` : 'اسکن رایگان شما تمام شده است'}
+            </Text>
+          )}
         </View>
         
         {isRecognizing ? (
@@ -261,6 +292,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontFamily: getPersianFont('regular'),
     writingDirection: 'rtl',
+  },
+  scanCountText: {
+    fontSize: 14,
+    fontFamily: getPersianFont('medium'),
+    color: Colors.primary,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: Colors.primary + '15',
+    borderRadius: 12,
   },
   optionsContainer: {
     gap: 20,
