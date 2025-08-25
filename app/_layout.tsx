@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import Colors, { getPersianFont } from "@/constants/colors";
-import bazaar from "@cafebazaar/react-native-poolakey";
+// import bazaar from "@cafebazaar/react-native-poolakey";
 import { useFoodStore } from "@/hooks/use-food-store";
 
 export const unstable_settings = {
@@ -53,44 +53,44 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const setIsPremium = useFoodStore((state) => state.setIsPremium);
+  // const setIsPremium = useFoodStore((state) => state.setIsPremium);
 
-  useEffect(() => {
-    // TODO: Replace with your actual RSA public key from Cafe Bazaar's developer panel
-    const rsaKey = "YOUR_BAZAAR_RSA_PUBLIC_KEY";
-    // TODO: Replace with your actual Subscription SKU from Cafe Bazaar
-    const SUBSCRIPTION_SKU = "monthly_subscription_sku";
+  // useEffect(() => {
+  //   // TODO: Replace with your actual RSA public key from Cafe Bazaar's developer panel
+  //   const rsaKey = "YOUR_BAZAAR_RSA_PUBLIC_KEY";
+  //   // TODO: Replace with your actual Subscription SKU from Cafe Bazaar
+  //   const SUBSCRIPTION_SKU = "monthly_subscription_sku";
 
-    const checkSubscriptionStatus = async () => {
-      try {
-        console.log("Connecting to Bazaar to check subscription...");
-        await bazaar.connect(rsaKey);
-        console.log("✅ Connection successful. Checking for subscriptions...");
+  //   const checkSubscriptionStatus = async () => {
+  //     try {
+  //       console.log("Connecting to Bazaar to check subscription...");
+  //       await bazaar.connect(rsaKey);
+  //       console.log("✅ Connection successful. Checking for subscriptions...");
 
-        const purchases = await bazaar.getSubscribedProducts();
-        console.log("Active subscriptions:", purchases);
+  //       const purchases = await bazaar.getSubscribedProducts();
+  //       console.log("Active subscriptions:", purchases);
 
-        const hasSubscription = purchases.some(
-          (purchase) => purchase.productId === SUBSCRIPTION_SKU
-        );
+  //       const hasSubscription = purchases.some(
+  //         (purchase) => purchase.productId === SUBSCRIPTION_SKU
+  //       );
 
-        setIsPremium(hasSubscription);
-        console.log(`User is ${hasSubscription ? 'PREMIUM' : 'not premium'}`);
+  //       setIsPremium(hasSubscription);
+  //       console.log(`User is ${hasSubscription ? 'PREMIUM' : 'not premium'}`);
 
-      } catch (e) {
-        console.error("❌ Error checking subscription status:", e);
-        // Assume not premium if there's an error
-        setIsPremium(false);
-      }
-    };
+  //     } catch (e) {
+  //       console.error("❌ Error checking subscription status:", e);
+  //       // Assume not premium if there's an error
+  //       setIsPremium(false);
+  //     }
+  //   };
 
-    checkSubscriptionStatus();
+  //   checkSubscriptionStatus();
 
-    return () => {
-      console.log("Disconnecting from Bazaar...");
-      bazaar.disconnect();
-    };
-  }, [setIsPremium]);
+  //   return () => {
+  //     console.log("Disconnecting from Bazaar...");
+  //     bazaar.disconnect();
+  //   };
+  // }, [setIsPremium]);
 
   return (
     <>

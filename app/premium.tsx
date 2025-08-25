@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } fr
 import { useRouter } from 'expo-router';
 import { Crown } from 'lucide-react-native';
 import Colors, { getPersianFont } from '@/constants/colors';
-import bazaar from '@cafebazaar/react-native-poolakey';
+// import bazaar from '@cafebazaar/react-native-poolakey';
 import { useFoodStore } from '@/hooks/use-food-store';
 
 const PremiumScreen = () => {
@@ -12,27 +12,32 @@ const PremiumScreen = () => {
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubscription = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Replace with your actual Subscription SKU from Cafe Bazaar
-      const SUBSCRIPTION_SKU = "monthly_subscription_sku";
+    // Temporarily disabled until the development build is created
+    Alert.alert(
+      'ویژگی در حال ساخت',
+      'قابلیت پرداخت درون‌برنامه‌ای به زودی فعال خواهد شد.'
+    );
+    // setIsLoading(true);
+    // try {
+    //   // TODO: Replace with your actual Subscription SKU from Cafe Bazaar
+    //   const SUBSCRIPTION_SKU = "monthly_subscription_sku";
 
-      console.log(`Attempting to subscribe to product: ${SUBSCRIPTION_SKU}`);
-      const purchase = await bazaar.subscribeProduct(SUBSCRIPTION_SKU);
-      console.log('Purchase successful:', purchase);
+    //   console.log(`Attempting to subscribe to product: ${SUBSCRIPTION_SKU}`);
+    //   const purchase = await bazaar.subscribeProduct(SUBSCRIPTION_SKU);
+    //   console.log('Purchase successful:', purchase);
 
-      // Optionally, you can verify the purchase with your backend here
+    //   // Optionally, you can verify the purchase with your backend here
 
-      setIsPremium(true);
-      Alert.alert('تبریک!', 'اشتراک شما با موفقیت فعال شد.');
-      router.back();
+    //   setIsPremium(true);
+    //   Alert.alert('تبریک!', 'اشتراک شما با موفقیت فعال شد.');
+    //   router.back();
 
-    } catch (error) {
-      console.error('Subscription error:', error);
-      Alert.alert('خطا', 'متاسفانه در فرآیند خرید مشکلی پیش آمد. لطفاً دوباره تلاش کنید.');
-    } finally {
-      setIsLoading(false);
-    }
+    // } catch (error) {
+    //   console.error('Subscription error:', error);
+    //   Alert.alert('خطا', 'متاسفانه در فرآیند خرید مشکلی پیش آمد. لطفاً دوباره تلاش کنید.');
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   return (
